@@ -8,10 +8,13 @@ strategy:
   matrix:
     Node6:
       NODE_VERSION: '6.x'
+      TEST_TITLE: 'Node 6 JUnit Test Results'
     Node8:
       NODE_VERSION: '8.x'
+      TEST_TITLE: 'Node 8 JUnit Test Results'
     Node10:
       NODE_VERSION: '10.x'
+      TEST_TITLE: 'Node 10 JUnit Test Results'
 
 steps:
 
@@ -26,4 +29,17 @@ steps:
 
   - script: npm run test
     displayName: 'Run tests'
+
+  - script: ./node_modules/.bin/nyc npm test && ./node_modules/.bin/nyc report --reporter=text-lcov | ./node_modules/.bin/coveralls
+    displayName: 'Publishing coverage results'
+
+  - script: |
+      ./node_modules/.bin/ava --tap | ./node_modules/.bin/tap-junit > test-results.xml
+    displayName: 'Run tap test reporter'
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: JUnit
+      testResultsFiles: './test-results.xml'
+      testRunTitle: $(TEST_TITLE)
 
